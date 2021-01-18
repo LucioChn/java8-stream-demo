@@ -78,12 +78,17 @@ public class StudentStreamDemo {
                 .collect(Collectors.toList());
         System.out.println(list1);
 
-        // 6.截取流limit
+        // 6.截取流 skip limit
         System.out.println("---------------------------limit-------------------------------");
         // limit方法用于获取指定数量的流。例如下面演示取出学习成绩大于70的5个人
         List<Student> students2 = students.stream().filter(student -> student.getScore() > 70)
                 .limit(5).collect(Collectors.toList());
         students2.forEach(System.out::println);
+        // 跳过第一个再取2个
+        List<Student> students8 = students.stream().skip(1).limit(2).collect(Collectors.toList());
+        // 获取5个int随机数,按从小到大排序
+        Random random = new Random();
+        random.ints().limit(5).sorted().forEach(System.out::println);
 
         // 7.排序sorted
         System.out.println("---------------------------sorted-------------------------------");
@@ -154,6 +159,86 @@ public class StudentStreamDemo {
         System.out.println("求和：" + sumScore);
         System.out.println("一次性统计所有：" + doubleSummaryStatistics1);
 
+        // 10.规约
+        System.out.println("---------------------------reduce-------------------------------");
+        List<Integer> integerList = Arrays.asList(6, 7, 1, 10, 11, 7, 13, 20);
+        // 求和
+        Optional<Integer> sum1 = integerList.stream().reduce(Integer::sum);
+        // 求和,基于10的基础上
+        Integer sum2 = integerList.stream().reduce(10, Integer::sum);
+        // 求最大值
+        Optional<Integer> max1 = integerList.stream().reduce((x, y) -> x > y ? x : y);
+        // 求最大值,基于与50比较的基础上
+        Integer max2 = integerList.stream().reduce(50, Integer::max);
+        Optional<Integer> min = integerList.stream().reduce(Integer::min);
+        // 求乘积
+        Optional<Integer> product = integerList.stream().reduce((x, y) -> x * y);
+        System.out.println("原始集合：" + integerList);
+        System.out.println("集合求和：" + sum1.get() + "," + sum2);
+        System.out.println("集合求最大值：" + max1.get() + "," + max2);
+        System.out.println("集合求最小值：" + min.get());
+        System.out.println("集合求积：" + product.get());
+
+        // 11.归集 toList，toSet，toMap
+        System.out.println(
+                "---------------------------toList，toSet，toMap-------------------------------");
+        // 获取学生名字，形成新的list集合
+        List<String> studentNames1 =
+                students.stream().map(Student::getName).collect(Collectors.toList());
+        // 获取年龄大于等于15的年龄set集合
+        Set<Integer> ageSet = students.stream().filter(student -> student.getAge() >= 15)
+                .map(Student::getAge).collect(Collectors.toSet());
+        // 创建学生ID和学生实体的map
+        Map<String, Student> studentMap =
+                students.stream().collect(Collectors.toMap(Student::getId, student -> student));
+        System.out.println(studentNames1);
+        System.out.println(ageSet);
+        studentMap.forEach((key, value) -> System.out.println(key + ":" + value));
+
+
+        // 12.分组 partitioningBy，groupingBy
+        System.out.println(
+                "---------------------------partitioningBy，groupingBy-------------------------------");
+        // 按条件学生成绩是否大于等于60，划分为2个组
+        Map<Boolean, List<Student>> studentScorePart = students.stream()
+                .collect(Collectors.partitioningBy(student -> student.getScore() >= 60));
+        // 按性别分组
+        Map<String, List<Student>> studentSexMap =
+                students.stream().collect(Collectors.groupingBy(Student::getSex));
+        // 按年龄分组
+        Map<Integer, List<Student>> studentAgeMap =
+                students.stream().collect(Collectors.groupingBy(Student::getAge));
+        // 先按性别分组，再按年龄分组
+        Map<String, Map<Integer, List<Student>>> collect = students.stream().collect(
+                Collectors.groupingBy(Student::getSex, Collectors.groupingBy(Student::getAge)));
+        System.out.println("按条件学生成绩是否大于等于60，划分为2个组:");
+        studentScorePart.forEach((aBoolean, students7) -> {
+            System.out.println("成绩大于等于60?:" + aBoolean);
+            students7.forEach(System.out::println);
+        });
+        System.out.println("按性别分组:");
+        studentSexMap.forEach((sex, students7) -> {
+            System.out.println("性别?:" + sex);
+            students7.forEach(System.out::println);
+        });
+        System.out.println("按年龄分组:");
+        studentAgeMap.forEach((age, students7) -> {
+            System.out.println("年龄:" + age);
+            students7.forEach(System.out::println);
+        });
+        System.out.println("先按性别分组，再按年龄分组:");
+        collect.forEach((sex, integerListMap) -> {
+            System.out.println("性别：" + sex);
+            integerListMap.forEach((age, students7) -> {
+                System.out.println("年龄:" + age);
+                students7.forEach(System.out::println);
+            });
+        });
+
+        // 13.合并
+        System.out.println("---------------------------joining-------------------------------");
+        String joinName = students.stream().map(Student::getName).collect(Collectors.joining(", "));
+        System.out.println(joinName);
 
     }
 }
